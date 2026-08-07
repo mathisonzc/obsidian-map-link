@@ -137,15 +137,16 @@ ln -s "$(pwd)" "<你的Vault路径>/.obsidian/plugins/map-link"
 
 把 `map-link` 提交到官方社区插件列表，让用户可以直接在 Obsidian
 「设置 → 第三方插件 → 浏览」里搜索安装。整个流程是：**把插件发到自己的
-GitHub 仓库 → 打一个带构建产物的 Release → 向 `obsidianmd/obsidian-releases`
-仓库提交一个 PR，登记你的插件 → 等官方审核合并**。以下是完整步骤。
+GitHub 仓库 → 打一个带构建产物的 Release → 到 community.obsidian.md
+用 Obsidian 账号登录并提交 → 等待自动 / 人工审核**。以下是完整步骤。
 
 ### 0. 前置准备
 
-- 一个 GitHub 账号，且**这个仓库必须是公开（public）的**。
-- `manifest.json` 中的 `id` 必须**全局唯一**（不能和市场里已有插件重名），
-  建议先去 [obsidian-releases 仓库的 community-plugins.json](https://github.com/obsidianmd/obsidian-releases/blob/master/community-plugins.json)
-  搜一下 `map-link` 有没有被占用。
+- 一个 GitHub 账号 + 一个 Obsidian 账号（提交在 community.obsidian.md 完成，需要用
+  Obsidian 账号登录），且**这个仓库必须是公开（public）的**。
+- `manifest.json` 中的 `id` 必须**全局唯一**且**不能包含 "obsidian"** 字样。
+  提交时系统会自动校验，也可以先去 [obsidian-releases 仓库的 community-plugins.json](https://github.com/obsidianmd/obsidian-releases/blob/master/community-plugins.json)
+  搜一下 `map-link` 有没有被占用（这个文件目前仍是市场索引的实际数据源，只是不再接受外部 PR）。
 - 仓库根目录必须有 `LICENSE` 文件（没有会被审核直接打回）。
 
 ### 1. 完善 `manifest.json`
@@ -232,53 +233,27 @@ gh release create 1.0.0 \
   --notes "首个版本：渲染高德地图短链为可交互地图，支持在 Spaced Repetition 卡片中显示"
 ```
 
-### 4. 向官方仓库提交登记 PR
+### 4. 在 community.obsidian.md 提交插件
 
-1. Fork [`obsidianmd/obsidian-releases`](https://github.com/obsidianmd/obsidian-releases)
-2. 克隆你 fork 的仓库，编辑根目录下的 `community-plugins.json`，
-   在数组**末尾**追加一项（注意保持 JSON 合法，逗号别漏/别多）：
+> ⚠️ 官方已经把提交流程从「fork `obsidian-releases` 改 `community-plugins.json` 提 PR」
+> 换成了网页表单，`obsidianmd/obsidian-releases` 这个仓库现在**不接受外部 PR**
+> （`pull_request_creation_policy: collaborators_only`）。以下是当前（2026 年）的实际流程。
 
-```json
-{
-	"id": "map-link",
-	"name": "Map Link",
-	"author": "mathisonzc",
-	"description": "Renders map share links as interactive maps in your notes using a maplink code block. Currently supports AutoNavi (Gaode) short links, with Google Maps and OpenStreetMap planned. Works inside Spaced Repetition flashcards too.",
-	"repo": "<你的用户名>/obsidian-map-link"
-}
-```
+1. 打开 <https://community.obsidian.md>，用你的 **Obsidian 账号**登录。
+2. 关联 / 授权你的 GitHub 账号，用于验证仓库所有权。
+3. 在站内找到"提交插件"入口（Add your plugin to the directory），填入你的插件仓库。
+   系统会自动读取你仓库**默认分支 HEAD** 的 `manifest.json` 做校验，
+   `id` 必须全局唯一，且**不能包含 "obsidian"** 字样。
 
-   `repo` 字段格式固定为 `GitHub用户名/仓库名`，不要带 `https://github.com/` 前缀。
+这一步需要你本人的 Obsidian 账号登录，没有可以脚本化代劳的空间。
 
-3. 提交并推送这个改动：
+### 5. 处理审核反馈
 
-```bash
-git checkout -b add-map-link
-git add community-plugins.json
-git commit -m "Add map-link plugin"
-git push origin add-map-link
-```
-
-4. 回到 GitHub，对 `obsidianmd/obsidian-releases` 的 `master` 分支发起 Pull Request。
-   官方有一个 PR 模板/Bot（`Obsidian Plugin Bot`）会自动检查：
-   - `manifest.json` 里的字段是否合法
-   - Release 里的资源文件是否齐全
-   - `id` 是否重复
-   - 仓库是否有 `LICENSE`
-
-   Bot 检查全部通过（会在 PR 里打勾/评论）后，才会进入人工审核队列。
-
-### 5. 人工审核
-
-- 官方团队会人工审查代码（尤其关注：网络请求、安全性、是否有明显 bug、
-  UI 是否符合 Obsidian 规范、是否有不必要的权限等）。
-- 审核周期从几天到数周不等，视审核队列长度而定。
-- 期间如果 reviewer 在 PR 里提出修改意见（常见如："别用行内样式"、
-  "说明一下这个网络请求的用途"等），直接在你的插件仓库里改代码、
-  发新的 Release（版本号 +1），PR 会自动带上最新状态，不需要重新开 PR。
-  可以在 PR 评论区回复说明已修复。
-- 通过后 PR 会被官方合并，插件会在**几小时到一天内**同步进
-  Obsidian 客户端内的插件市场索引，用户就能在「浏览社区插件」里搜到。
+- 提交后系统会自动审核，不通过的地方会直接显示在 community.obsidian.md 的
+  提交页面上（不再是 GitHub PR 评论的形式）。
+- 需要改动时：改代码 → 改 `manifest.json` 的 `version`（自然数递增）→
+  打一个新 Release → 系统会自动读取最新状态，不需要重新提交一次。
+- 通过后插件会出现在 Obsidian 客户端「浏览社区插件」列表里。
 
 ### 6. 后续更新版本
 
@@ -290,12 +265,12 @@ git push origin add-map-link
    最低支持的 Obsidian 版本）。
 3. `npm run build`，打一个新的 Release（tag 同样必须等于新版本号），
    上传新的 `manifest.json` / `main.js` / `styles.css`。
-4. **不需要**再向 `obsidian-releases` 提 PR ——市场索引里只记录了你的仓库地址，
+4. **不需要**再去 community.obsidian.md 重新提交——市场索引里只记录了你的仓库地址，
    Obsidian 客户端会自动去你仓库最新 Release 拉取更新，用户端会收到更新提示。
 
 ### 常见被拒 / 打回原因（提前自查）
 
-- `manifest.json` 的 `id` 和市场里已有插件冲突。
+- `manifest.json` 的 `id` 和市场里已有插件冲突，或者 `id`/`name` 里包含 "obsidian"。
 - 忘记打 `LICENSE`。
 - Release 的 tag 和 `manifest.json` 的 `version` 不一致。
 - Release 里没有直接上传 `main.js` / `manifest.json`（而是打包成了 zip）。
@@ -307,5 +282,5 @@ git push origin add-map-link
 
 - 官方提交插件文档：<https://docs.obsidian.md/Plugins/Releasing/Submit+your+plugin>
 - 插件规范/审核清单：<https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines>
-- 官方登记仓库：<https://github.com/obsidianmd/obsidian-releases>
+- 插件提交入口：<https://community.obsidian.md>
 
