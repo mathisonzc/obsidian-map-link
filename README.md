@@ -55,4 +55,5 @@ Location: http://wb.amap.com/?p=<POI_ID>,<纬度>,<经度>,<名称>,<城市>,<�
 
 ## 开发者
 
-插件开发、本地调试与发布到社区插件市场的流程见 [`DEVELOPMENT.md`](./DEVELOPMENT.md)。
+本地开发与调试见 [`DEVELOPMENT.md`](./DEVELOPMENT.md)，发布到社区插件市场的流程见
+[`PUBLISHING.md`](./PUBLISHING.md)。

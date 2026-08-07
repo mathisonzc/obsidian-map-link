@@ -1,12 +1,14 @@
-# 开发、测试与发布指南
+# 本地开发与测试指南
 
-面向插件开发者。终端用户的安装和使用说明见 [`README.md`](./README.md)。
+面向插件开发者。终端用户的安装和使用说明见 [`README.md`](./README.md)，
+发布到 Obsidian 社区插件市场的流程见 [`PUBLISHING.md`](./PUBLISHING.md)。
 
 ---
 
-## 一、本地部署与测试
+## 本地部署与测试
 
-在提交到社区插件市场（见下文「发布」）之前，先在自己的 Vault 里把插件跑起来验证一遍。
+在提交到社区插件市场（见 [`PUBLISHING.md`](./PUBLISHING.md)）之前，
+先在自己的 Vault 里把插件跑起来验证一遍。
 
 ### 方式一：手动复制到 Vault（最简单）
 
@@ -130,157 +132,4 @@ ln -s "$(pwd)" "<你的Vault路径>/.obsidian/plugins/map-link"
 
 **打开开发者工具**
 `Ctrl/Cmd + Shift + I`，或者命令面板执行 `Toggle Developer Tools`。
-
----
-
-## 二、发布到 Obsidian 社区插件市场
-
-把 `map-link` 提交到官方社区插件列表，让用户可以直接在 Obsidian
-「设置 → 第三方插件 → 浏览」里搜索安装。整个流程是：**把插件发到自己的
-GitHub 仓库 → 打一个带构建产物的 Release → 到 community.obsidian.md
-用 Obsidian 账号登录并提交 → 等待自动 / 人工审核**。以下是完整步骤。
-
-### 0. 前置准备
-
-- 一个 GitHub 账号 + 一个 Obsidian 账号（提交在 community.obsidian.md 完成，需要用
-  Obsidian 账号登录），且**这个仓库必须是公开（public）的**。
-- `manifest.json` 中的 `id` 必须**全局唯一**且**不能包含 "obsidian"** 字样。
-  提交时系统会自动校验，也可以先去 [obsidian-releases 仓库的 community-plugins.json](https://github.com/obsidianmd/obsidian-releases/blob/master/community-plugins.json)
-  搜一下 `map-link` 有没有被占用（这个文件目前仍是市场索引的实际数据源，只是不再接受外部 PR）。
-- 仓库根目录必须有 `LICENSE` 文件（没有会被审核直接打回）。
-
-### 1. 完善 `manifest.json`
-
-发布前检查这几个字段（示例基于当前项目）：
-
-```json
-{
-	"id": "map-link",
-	"name": "Map Link",
-	"version": "1.0.0",
-	"minAppVersion": "1.0.0",
-	"description": "Renders map share links as interactive maps in your notes using a maplink code block. Currently supports AutoNavi (Gaode) short links, with Google Maps and OpenStreetMap planned. Works inside Spaced Repetition flashcards too.",
-	"author": "mathisonzc",
-	"authorUrl": "https://github.com/<你的用户名>",
-	"isDesktopOnly": false
-}
-```
-
-要点：
-- `id` 一旦提交审核通过，**以后不能再改**（改了等于变成一个新插件）。
-- `description` 建议控制在 250 字符以内，不要用 "Obsidian" 开头（官方审核规则）。
-- 由于短链解析在移动端会退化到 `requestUrl`（不保证一定能拿到跳转坐标），
-  如果你想更保险，可以把 `isDesktopOnly` 设为 `true`；如果测试过移动端可用，
-  保持 `false` 即可。
-
-### 2. 把代码推到 GitHub
-
-```bash
-git init                      # 如果还没初始化
-git add manifest.json main.ts amapResolver.ts styles.css \
-        package.json package-lock.json tsconfig.json \
-        esbuild.config.mjs versions.json README.md .gitignore
-git commit -m "Initial commit: Map Link v1.0.0"
-git branch -M main
-git remote add origin https://github.com/<你的用户名>/obsidian-map-link.git
-git push -u origin main
-```
-
-> 注意：`main.js` 不要提交到分支里（保持 `.gitignore` 忽略它），
-> 它只在下一步的 **Release** 里作为构建产物上传。
-
-补一个 `LICENSE` 文件（例如 MIT）：
-
-```bash
-curl -s https://raw.githubusercontent.com/licenses/license-templates/master/templates/mit.txt \
-  -o LICENSE   # 或直接去 GitHub 新建仓库时勾选 "Choose a license"
-```
-
-### 3. 打 Release（社区插件市场是从 Release 里拉取文件的）
-
-Obsidian 官方的插件商店**不是**从源码构建，而是直接从你 GitHub 仓库的
-某个 **Release** 里下载这三个文件：`manifest.json`、`main.js`、`styles.css`
-（`styles.css` 如果没有可以不传）。
-
-**3.1 本地构建**
-
-```bash
-npm install
-npm run build      # 生成 main.js
-```
-
-**3.2 创建 Release**
-
-**Release 的 tag 名必须和 `manifest.json` 里的 `version` 完全一致**（不要加 `v` 前缀，
-例如 tag 就叫 `1.0.0`，不是 `v1.0.0`）。
-
-用 GitHub 网页操作：
-1. 仓库页面 → `Releases` → `Draft a new release`
-2. `Choose a tag` 填 `1.0.0`（新建），目标分支选 `main`
-3. Release title 随意（例如 `1.0.0`）
-4. 把下面三个文件作为二进制附件上传（**直接拖拽上传，不要打包成 zip**）：
-   - `manifest.json`
-   - `main.js`
-   - `styles.css`
-5. 点击 `Publish release`
-
-也可以用 `gh` CLI 一次性完成：
-
-```bash
-gh release create 1.0.0 \
-  manifest.json main.js styles.css \
-  --title "1.0.0" \
-  --notes "首个版本：渲染高德地图短链为可交互地图，支持在 Spaced Repetition 卡片中显示"
-```
-
-### 4. 在 community.obsidian.md 提交插件
-
-> ⚠️ 官方已经把提交流程从「fork `obsidian-releases` 改 `community-plugins.json` 提 PR」
-> 换成了网页表单，`obsidianmd/obsidian-releases` 这个仓库现在**不接受外部 PR**
-> （`pull_request_creation_policy: collaborators_only`）。以下是当前（2026 年）的实际流程。
-
-1. 打开 <https://community.obsidian.md>，用你的 **Obsidian 账号**登录。
-2. 关联 / 授权你的 GitHub 账号，用于验证仓库所有权。
-3. 在站内找到"提交插件"入口（Add your plugin to the directory），填入你的插件仓库。
-   系统会自动读取你仓库**默认分支 HEAD** 的 `manifest.json` 做校验，
-   `id` 必须全局唯一，且**不能包含 "obsidian"** 字样。
-
-这一步需要你本人的 Obsidian 账号登录，没有可以脚本化代劳的空间。
-
-### 5. 处理审核反馈
-
-- 提交后系统会自动审核，不通过的地方会直接显示在 community.obsidian.md 的
-  提交页面上（不再是 GitHub PR 评论的形式）。
-- 需要改动时：改代码 → 改 `manifest.json` 的 `version`（自然数递增）→
-  打一个新 Release → 系统会自动读取最新状态，不需要重新提交一次。
-- 通过后插件会出现在 Obsidian 客户端「浏览社区插件」列表里。
-
-### 6. 后续更新版本
-
-以后每次发新版本，只需要：
-
-1. 修改 `manifest.json` 的 `version`（例如 `1.0.1`），如果提高了
-   `minAppVersion` 也一并更新。
-2. 在 `versions.json` 里补一条 `"1.0.1": "1.0.0"`（表示这个插件版本
-   最低支持的 Obsidian 版本）。
-3. `npm run build`，打一个新的 Release（tag 同样必须等于新版本号），
-   上传新的 `manifest.json` / `main.js` / `styles.css`。
-4. **不需要**再去 community.obsidian.md 重新提交——市场索引里只记录了你的仓库地址，
-   Obsidian 客户端会自动去你仓库最新 Release 拉取更新，用户端会收到更新提示。
-
-### 常见被拒 / 打回原因（提前自查）
-
-- `manifest.json` 的 `id` 和市场里已有插件冲突，或者 `id`/`name` 里包含 "obsidian"。
-- 忘记打 `LICENSE`。
-- Release 的 tag 和 `manifest.json` 的 `version` 不一致。
-- Release 里没有直接上传 `main.js` / `manifest.json`（而是打包成了 zip）。
-- 代码里有硬编码的密钥/token，或请求了跟插件功能无关的外部服务。
-- 使用了 `innerHTML`/`eval` 等官方不建议的写法（本插件目前没有用到，无需修改）。
-- `README.md` 里没有说明插件的用途和使用方法。
-
-### 参考链接
-
-- 官方提交插件文档：<https://docs.obsidian.md/Plugins/Releasing/Submit+your+plugin>
-- 插件规范/审核清单：<https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines>
-- 插件提交入口：<https://community.obsidian.md>
 
