@@ -158,7 +158,7 @@ GitHub 仓库 → 打一个带构建产物的 Release → 向 `obsidianmd/obsidi
 	"name": "Map Link",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "用 maplink 代码块把地图分享链接渲染成笔记内可交互的地图视图，目前支持高德地图短链，后续将支持 Google Maps、OpenStreetMap 等。可在 Spaced Repetition 卡片中正常显示。",
+	"description": "Renders map share links as interactive maps in your notes using a maplink code block. Currently supports AutoNavi (Gaode) short links, with Google Maps and OpenStreetMap planned. Works inside Spaced Repetition flashcards too.",
 	"author": "mathisonzc",
 	"authorUrl": "https://github.com/<你的用户名>",
 	"isDesktopOnly": false
@@ -243,7 +243,7 @@ gh release create 1.0.0 \
 	"id": "map-link",
 	"name": "Map Link",
 	"author": "mathisonzc",
-	"description": "用 maplink 代码块把地图分享链接渲染成笔记内可交互的地图视图，目前支持高德地图短链，后续将支持 Google Maps、OpenStreetMap 等。可在 Spaced Repetition 卡片中正常显示。",
+	"description": "Renders map share links as interactive maps in your notes using a maplink code block. Currently supports AutoNavi (Gaode) short links, with Google Maps and OpenStreetMap planned. Works inside Spaced Repetition flashcards too.",
 	"repo": "<你的用户名>/obsidian-map-link"
 }
 ```
