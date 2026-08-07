@@ -1,5 +1,5 @@
 {
-	"name": "maplink",
+	"name": "map-link",
 	"version": "1.0.0",
 	"description": "Render map share links as interactive map views in Obsidian. Currently supports AutoNavi (Gaode/高德地图) short links, with Google Maps/OpenStreetMap planned.",
 	"main": "main.js",

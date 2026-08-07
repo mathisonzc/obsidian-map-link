@@ -20,16 +20,16 @@ npm run build   # 生成 main.js
 把三个产物文件复制到你的 Vault 插件目录：
 
 ```bash
-mkdir -p "<你的Vault路径>/.obsidian/plugins/maplink"
+mkdir -p "<你的Vault路径>/.obsidian/plugins/map-link"
 cp manifest.json main.js styles.css \
-  "<你的Vault路径>/.obsidian/plugins/maplink/"
+  "<你的Vault路径>/.obsidian/plugins/map-link/"
 ```
 
 然后：
 
 1. 打开 Obsidian → 设置 → 第三方插件
 2. 如果「安全模式」是开着的，先关闭它
-3. 在已安装插件列表里找到「MapLink」，点击启用
+3. 在已安装插件列表里找到「Map Link」，点击启用
 
 改代码后需要重复 `npm run build` + `cp` + 在 Obsidian 里重启/重载才能看到效果。
 
@@ -52,7 +52,7 @@ npm run dev
 不用每次手动复制文件，直接把整个项目目录软链接到 Vault 的插件目录：
 
 ```bash
-ln -s "$(pwd)" "<你的Vault路径>/.obsidian/plugins/maplink"
+ln -s "$(pwd)" "<你的Vault路径>/.obsidian/plugins/map-link"
 ```
 
 > Windows 用户如果不是用 WSL，需要用管理员权限的 `mklink /D` 命令创建符号链接，
@@ -132,7 +132,7 @@ ln -s "$(pwd)" "<你的Vault路径>/.obsidian/plugins/maplink"
 
 ## 二、发布到 Obsidian 社区插件市场
 
-把 `maplink` 提交到官方社区插件列表，让用户可以直接在 Obsidian
+把 `map-link` 提交到官方社区插件列表，让用户可以直接在 Obsidian
 「设置 → 第三方插件 → 浏览」里搜索安装。整个流程是：**把插件发到自己的
 GitHub 仓库 → 打一个带构建产物的 Release → 向 `obsidianmd/obsidian-releases`
 仓库提交一个 PR，登记你的插件 → 等官方审核合并**。以下是完整步骤。
@@ -142,7 +142,7 @@ GitHub 仓库 → 打一个带构建产物的 Release → 向 `obsidianmd/obsidi
 - 一个 GitHub 账号，且**这个仓库必须是公开（public）的**。
 - `manifest.json` 中的 `id` 必须**全局唯一**（不能和市场里已有插件重名），
   建议先去 [obsidian-releases 仓库的 community-plugins.json](https://github.com/obsidianmd/obsidian-releases/blob/master/community-plugins.json)
-  搜一下 `maplink` 有没有被占用。
+  搜一下 `map-link` 有没有被占用。
 - 仓库根目录必须有 `LICENSE` 文件（没有会被审核直接打回）。
 
 ### 1. 完善 `manifest.json`
@@ -151,8 +151,8 @@ GitHub 仓库 → 打一个带构建产物的 Release → 向 `obsidianmd/obsidi
 
 ```json
 {
-	"id": "maplink",
-	"name": "MapLink",
+	"id": "map-link",
+	"name": "Map Link",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
 	"description": "用 maplink 代码块把地图分享链接渲染成笔记内可交互的地图视图，目前支持高德地图短链，后续将支持 Google Maps、OpenStreetMap 等。可在 Spaced Repetition 卡片中正常显示。",
@@ -176,9 +176,9 @@ git init                      # 如果还没初始化
 git add manifest.json main.ts amapResolver.ts styles.css \
         package.json package-lock.json tsconfig.json \
         esbuild.config.mjs versions.json README.md .gitignore
-git commit -m "Initial commit: maplink v1.0.0"
+git commit -m "Initial commit: Map Link v1.0.0"
 git branch -M main
-git remote add origin https://github.com/<你的用户名>/maplink.git
+git remote add origin https://github.com/<你的用户名>/obsidian-map-link.git
 git push -u origin main
 ```
 
@@ -237,11 +237,11 @@ gh release create 1.0.0 \
 
 ```json
 {
-	"id": "maplink",
-	"name": "MapLink",
+	"id": "map-link",
+	"name": "Map Link",
 	"author": "mathisonzc",
 	"description": "用 maplink 代码块把地图分享链接渲染成笔记内可交互的地图视图，目前支持高德地图短链，后续将支持 Google Maps、OpenStreetMap 等。可在 Spaced Repetition 卡片中正常显示。",
-	"repo": "<你的用户名>/maplink"
+	"repo": "<你的用户名>/obsidian-map-link"
 }
 ```
 
@@ -250,10 +250,10 @@ gh release create 1.0.0 \
 3. 提交并推送这个改动：
 
 ```bash
-git checkout -b add-maplink
+git checkout -b add-map-link
 git add community-plugins.json
-git commit -m "Add maplink plugin"
-git push origin add-maplink
+git commit -m "Add map-link plugin"
+git push origin add-map-link
 ```
 
 4. 回到 GitHub，对 `obsidianmd/obsidian-releases` 的 `master` 分支发起 Pull Request。

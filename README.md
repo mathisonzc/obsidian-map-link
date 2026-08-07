@@ -1,4 +1,4 @@
-# MapLink
+# Map Link
 
 把地图分享链接渲染成 Obsidian 笔记内可交互的地图视图。目前支持**高德地图短链**
 （如 `https://surl.amap.com/msaUAvMjaTf`），后续计划支持 Google Maps、
@@ -8,13 +8,13 @@ OpenStreetMap 等更多地图来源。同样适用于 Spaced Repetition 插件�
 
 **方式一：社区插件市场**（插件发布后可用）
 
-Obsidian 设置 → 第三方插件 → 浏览 → 搜索「MapLink」→ 安装并启用。
+Obsidian 设置 → 第三方插件 → 浏览 → 搜索「Map Link」→ 安装并启用。
 
 **方式二：手动安装**
 
 从 [Releases](../../releases) 下载最新版本的 `manifest.json`、`main.js`、`styles.css`
-三个文件，拷贝到 `<你的 Vault>/.obsidian/plugins/maplink/` 目录下，
-然后在 Obsidian 的「第三方插件」设置中启用「MapLink」。
+三个文件，拷贝到 `<你的 Vault>/.obsidian/plugins/map-link/` 目录下，
+然后在 Obsidian 的「第三方插件」设置中启用「Map Link」。
 
 ## 用法
 
