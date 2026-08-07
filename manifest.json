@@ -1,0 +1,10 @@
+{
+	"id": "maplink",
+	"name": "MapLink",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "用 maplink 代码块把地图分享链接渲染成笔记内可交互的地图视图，目前支持高德地图短链，后续将支持 Google Maps、OpenStreetMap 等。可在 Spaced Repetition 卡片中正常显示。",
+	"author": "mathisonzc",
+	"authorUrl": "",
+	"isDesktopOnly": false
+}
