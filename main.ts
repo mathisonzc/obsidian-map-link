@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, MarkdownRenderChild, Plugin } from "obsidian";
+import { MarkdownPostProcessorContext, MarkdownRenderChild, Platform, Plugin } from "obsidian";
 import * as L from "leaflet";
 import { AmapPoint, resolveAmapShortLink } from "./amapResolver";
 
@@ -34,6 +34,7 @@ class MapEmbed extends MarkdownRenderChild {
 	private map: L.Map | null = null;
 	private ro: ResizeObserver | null = null;
 	private destroyed = false;
+	private hintTimer: number | null = null;
 
 	constructor(
 		private container: HTMLElement,
@@ -51,6 +52,7 @@ class MapEmbed extends MarkdownRenderChild {
 		this.destroyed = true;
 		this.ro?.disconnect();
 		this.ro = null;
+		if (this.hintTimer !== null) window.clearTimeout(this.hintTimer);
 		this.map?.remove();
 		this.map = null;
 	}
@@ -97,10 +99,12 @@ class MapEmbed extends MarkdownRenderChild {
 			minZoom: 3,
 			maxZoom: 18,
 			zoomControl: true,
-			scrollWheelZoom: false,
+			scrollWheelZoom: true,
 			attributionControl: true,
 		});
 		this.map = map;
+
+		this.setupWheelZoomGuard();
 
 		L.tileLayer(
 			"https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
@@ -137,5 +141,32 @@ class MapEmbed extends MarkdownRenderChild {
 		this.ro.observe(this.container);
 
 		window.setTimeout(() => map.invalidateSize(), 50);
+	}
+
+	// 直接开滚轮缩放会导致划过地图时笔记没法正常滚动，
+	// 所以约定 Ctrl/Cmd + 滚轮才缩放；不按修饰键时在捕获阶段拦下事件，
+	// 不调用 preventDefault，让浏览器按默认行为滚动笔记。
+	private setupWheelZoomGuard() {
+		const hint = this.container.createDiv({
+			cls: "maplink-scroll-hint",
+			text: Platform.isMacOS ? "按住 ⌘ 滚动可缩放地图" : "按住 Ctrl 滚动可缩放地图",
+		});
+		let hintShown = false;
+
+		this.container.addEventListener(
+			"wheel",
+			(e: WheelEvent) => {
+				if (e.ctrlKey || e.metaKey) return;
+				e.stopPropagation();
+				if (hintShown) return;
+				hintShown = true;
+				hint.addClass("is-visible");
+				this.hintTimer = window.setTimeout(() => hint.removeClass("is-visible"), 1500);
+			},
+			{ capture: true, passive: true }
+		);
+		this.container.addEventListener("mouseleave", () => {
+			hintShown = false;
+		});
 	}
 }
