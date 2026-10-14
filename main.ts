@@ -35,7 +35,10 @@ export default class MapLinkPlugin extends Plugin {
 
 class MapEmbed extends MarkdownRenderChild {
 	private map: L.Map | null = null;
+	private mapEl: HTMLElement | null = null;
+	private point: AmapPoint | null = null;
 	private ro: ResizeObserver | null = null;
+	private io: IntersectionObserver | null = null;
 	private destroyed = false;
 	private hintTimer: number | null = null;
 
@@ -53,11 +56,10 @@ class MapEmbed extends MarkdownRenderChild {
 
 	onunload() {
 		this.destroyed = true;
-		this.ro?.disconnect();
-		this.ro = null;
+		this.io?.disconnect();
+		this.io = null;
 		if (this.hintTimer !== null) window.clearTimeout(this.hintTimer);
-		this.map?.remove();
-		this.map = null;
+		this.teardownMap();
 	}
 
 	private async render() {
@@ -90,11 +92,45 @@ class MapEmbed extends MarkdownRenderChild {
 		}
 
 		status.remove();
-		this.buildMap(point);
+		this.point = point;
+		this.mapEl = this.container.createDiv({ cls: "maplink-map" });
+		this.setupWheelZoomGuard();
+		const footer = this.container.createDiv({ cls: "maplink-footer" });
+		footer.createEl("a", {
+			text: "在高德地图中打开",
+			href: this.url,
+		});
+
+		// Spaced Repetition 等插件把渲染上下文挂在插件自身上，换卡/关闭弹窗时
+		// 并不会 unload 我们，导致 Leaflet 实例（window resize 监听、瓦片图片）一直泄漏，
+		// 复习久了 Obsidian 会内存耗尽白屏。所以这里自己盯住容器：
+		// 进入视口时才创建地图，容器被移出文档时立即销毁地图，重新挂回来时再重建。
+		this.io = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting && entry.target.isConnected) {
+						this.buildMap();
+					} else if (!entry.target.isConnected) {
+						this.teardownMap();
+					}
+				}
+			},
+			{ rootMargin: "200px" }
+		);
+		this.io.observe(this.container);
 	}
 
-	private buildMap(point: AmapPoint) {
-		const mapEl = this.container.createDiv({ cls: "maplink-map" });
+	private teardownMap() {
+		this.ro?.disconnect();
+		this.ro = null;
+		this.map?.remove();
+		this.map = null;
+	}
+
+	private buildMap() {
+		const point = this.point;
+		const mapEl = this.mapEl;
+		if (this.map || this.destroyed || !point || !mapEl) return;
 
 		const map = L.map(mapEl, {
 			center: [point.lat, point.lng],
@@ -106,8 +142,6 @@ class MapEmbed extends MarkdownRenderChild {
 			attributionControl: true,
 		});
 		this.map = map;
-
-		this.setupWheelZoomGuard();
 
 		L.tileLayer(
 			"https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
@@ -128,20 +162,16 @@ class MapEmbed extends MarkdownRenderChild {
 		// 预览里只保留位置标识，不展示地点名称（名称仍作为 title 供悬停查看）。
 		L.marker([point.lat, point.lng], { icon, title: point.name || undefined }).addTo(map);
 
-		const footer = this.container.createDiv({ cls: "maplink-footer" });
-		footer.createEl("a", {
-			text: "在高德地图中打开",
-			href: this.url,
-		});
-
 		// 弹出卡片/模态框展开动画结束前地图容器可能尺寸为 0，
 		// 用 ResizeObserver 在尺寸稳定后重新计算地图尺寸，避免瓦片错位或空白。
 		this.ro = new ResizeObserver(() => {
-			map.invalidateSize();
+			if (this.map === map) map.invalidateSize();
 		});
 		this.ro.observe(this.container);
 
-		window.setTimeout(() => map.invalidateSize(), 50);
+		window.setTimeout(() => {
+			if (this.map === map) map.invalidateSize();
+		}, 50);
 	}
 
 	// 直接开滚轮缩放会导致划过地图时笔记没法正常滚动，
@@ -162,6 +192,7 @@ class MapEmbed extends MarkdownRenderChild {
 				if (hintShown) return;
 				hintShown = true;
 				hint.addClass("is-visible");
+				if (this.hintTimer !== null) window.clearTimeout(this.hintTimer);
 				this.hintTimer = window.setTimeout(() => hint.removeClass("is-visible"), 1500);
 			},
 			{ capture: true, passive: true }
