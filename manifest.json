@@ -1,0 +1,10 @@
+{
+	"id": "map-link",
+	"name": "Map Link",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Renders map share links as interactive maps in your notes using a maplink code block. Currently supports AutoNavi (Gaode) short links, with Google Maps and OpenStreetMap planned. Works inside Spaced Repetition flashcards too.",
+	"author": "mathisonzc",
+	"authorUrl": "",
+	"isDesktopOnly": false
+}
